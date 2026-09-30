@@ -46,6 +46,12 @@ class ButtonMultiplexer : public CodalComponent {
         latch.getDigitalValue(PullMode::None);
         clock.getDigitalValue(PullMode::None);
         enabled = false;
+
+        // clock (P20) is also the external I2C SDA line. Using it as GPIO above
+        // made CODAL release uBit.i2c from P19/P20, leaving the TWIM without pins,
+        // so every I2C transfer busy-waits into its (10s) timeout and starves the
+        // screen fiber. The smart shield doesn't need P19/P20, so hand them back.
+        uBit.i2c.redirect(uBit.io.P20, uBit.io.P19);
     }
 
     bool isButtonPressed(int id) {
